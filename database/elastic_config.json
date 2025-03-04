@@ -1,0 +1,13 @@
+{
+  "settings": {
+    "number_of_shards": 1,
+    "number_of_replicas": 1
+  },
+  "mappings": {
+    "properties": {
+      "tender_id": { "type": "integer" },
+      "ocr_text": { "type": "text" },
+      "uploaded_at": { "type": "date" }
+    }
+  }
+}

@@ -1,0 +1,96 @@
+pipeline {
+    agent any
+
+    environment {
+        DOCKER_IMAGE_BACKEND = 'myrepo/tender-backend:latest'
+        DOCKER_IMAGE_FRONTEND = 'myrepo/tender-frontend:latest'
+        DEPLOY_SERVER = 'user@yourserver.com'
+        DOCKER_COMPOSE_PATH = '/home/user/tender/docker-compose.yml'
+    }
+
+    stages {
+        stage('Checkout Code') {
+            steps {
+                script {
+                    echo 'Checking out the latest code from GitHub...'
+                    git branch: 'main', credentialsId: 'github-credentials', url: 'https://github.com/yourrepo/tender-processing.git'
+                }
+            }
+        }
+
+        stage('Build Backend') {
+            steps {
+                script {
+                    echo 'Installing Backend Dependencies...'
+                    sh 'cd backend && pip install -r requirements.txt'
+                }
+            }
+        }
+
+        stage('Run Backend Tests') {
+            steps {
+                script {
+                    echo 'Running Backend Tests...'
+                    sh 'cd backend && pytest --disable-warnings'
+                }
+            }
+        }
+
+        stage('Build Frontend') {
+            steps {
+                script {
+                    echo 'Installing Frontend Dependencies...'
+                    sh 'cd frontend && npm install && npm run build'
+                }
+            }
+        }
+
+        stage('Run Frontend Tests') {
+            steps {
+                script {
+                    echo 'Running Frontend Tests...'
+                    sh 'cd frontend && npm test'
+                }
+            }
+        }
+
+        stage('Build Docker Images') {
+            steps {
+                script {
+                    echo 'Building Backend & Frontend Docker Images...'
+                    sh 'docker build -t $DOCKER_IMAGE_BACKEND ./backend'
+                    sh 'docker build -t $DOCKER_IMAGE_FRONTEND ./frontend'
+                }
+            }
+        }
+
+        stage('Push Docker Images') {
+            steps {
+                script {
+                    echo 'Pushing Docker Images to Registry...'
+                    sh 'docker login -u mydockerhub -p mypassword'
+                    sh 'docker push $DOCKER_IMAGE_BACKEND'
+                    sh 'docker push $DOCKER_IMAGE_FRONTEND'
+                }
+            }
+        }
+
+        stage('Deploy to Server') {
+            steps {
+                script {
+                    echo 'Deploying to Server...'
+                    sh "ssh $DEPLOY_SERVER 'docker-compose -f $DOCKER_COMPOSE_PATH pull && docker-compose -f $DOCKER_COMPOSE_PATH up -d'"
+                }
+            }
+        }
+    }
+
+    post {
+        success {
+            echo 'Deployment Successful! 🎉'
+        }
+        failure {
+            echo 'Deployment Failed! ❌'
+        }
+    }
+}
