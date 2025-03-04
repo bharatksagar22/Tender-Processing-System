@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
@@ -169,3 +170,14 @@ cython_debug/
 
 # PyPI configuration file
 .pypirc
+=======
+# Python
+__pycache__/
+*.pyc
+venv/
+
+# Node.js
+node_modules/
+dist/
+.env
+>>>>>>> f046011 (Initial commit)
